@@ -1,121 +1,147 @@
-# Assignment 9: Database Integration with FastAPI, PostgreSQL, and pgAdmin
+Module 10: Secure User Authentication with SQLAlchemy
+Show Image
+📋 Project Overview
+This project implements a secure user authentication system using FastAPI, SQLAlchemy, and bcrypt password hashing. It demonstrates fundamental web security practices including password hashing, database modeling with ORM, and input validation with Pydantic schemas.
+🚀 Features
 
-**Student:** Pruthul Patel  
-**GitHub Repository:** https://github.com/Pruthul15/assignment9  
-**Date:** October 9, 2025
+User Model: SQLAlchemy model with username, email, password_hash, and created_at fields
+Password Security: Bcrypt hashing with unique salts for each password
+Input Validation: Pydantic schemas with email format and password strength validation
+Database: PostgreSQL with unique constraints on username and email
+Comprehensive Testing: 43 tests covering unit, integration, and E2E scenarios
+CI/CD Pipeline: Automated testing, security scanning, and Docker deployment
 
----
+🏗️ Project Structure
+assignment10/
+├── app/
+│   ├── models/
+│   │   └── user.py              # SQLAlchemy User model
+│   ├── schemas/
+│   │   ├── base.py              # Pydantic base schemas with validation
+│   │   └── user.py              # User schemas (UserCreate, UserRead)
+│   ├── utils/
+│   │   └── security.py          # Password hashing functions
+│   ├── config.py                # Configuration settings
+│   └── database.py              # Database connection setup
+├── tests/
+│   ├── unit/                    # Unit tests (30 tests)
+│   ├── integration/             # Integration tests (10 tests)
+│   └── e2e/                     # End-to-end tests (3 tests)
+├── docker-compose.yml           # Local development setup
+├── Dockerfile                   # Production container
+└── requirements.txt             # Python dependencies
+🔧 Local Setup
+Prerequisites
 
-## Overview
+Python 3.10+
+Docker and Docker Compose
+Git
 
-This assignment demonstrates SQL database operations using Docker Compose with FastAPI, PostgreSQL, and pgAdmin.
+Installation Steps
 
----
+Clone the repository
 
-## Setup
+bashgit clone https://github.com/Pruthul15/assignment10.git
+cd assignment10
 
-### Start Services
-```bash
-cd ~/projects/assignment9
-docker compose up
-```
+Create virtual environment
 
-### Access pgAdmin
-- URL: http://localhost:5050
-- Login: admin@example.com / admin
+bashpython -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-### Connect to Database
-- Host: `db`
-- Database: `fastapi_db`
-- Username/Password: `postgres` / `postgres`
+Install dependencies
+
+bashpip install -r requirements.txt
+
+Start Docker services
+
+bashdocker-compose up -d
+🧪 Running Tests Locally
+Run All Tests
+bashpytest -v
+Run Tests by Category
+bash# Unit tests only
+pytest tests/unit/ -v
+
+# Integration tests only
+pytest tests/integration/ -v
+
+# E2E tests only
+pytest tests/e2e/ -v
+Run Tests with Coverage
+bashpytest --cov=app --cov-report=html
+View coverage report: open htmlcov/index.html
+📊 Test Results
+
+Total Tests: 43
+Coverage: 93%
+Unit Tests: 30 (password hashing, schema validation)
+Integration Tests: 10 (database operations, uniqueness constraints)
+E2E Tests: 3 (browser-based calculator tests)
+
+🐳 Docker Hub
+Docker images are automatically built and pushed on successful CI/CD pipeline runs:
+Repository: pruthul123/assignment10
+Pull the latest image:
+bashdocker pull pruthul123/assignment10:latest
+Run the container:
+bashdocker run -p 8000:8000 pruthul123/assignment10:latest
+🔐 Key Security Features
+Password Hashing
+
+Uses bcrypt algorithm with automatically generated salts
+Each password gets a unique hash even if passwords are identical
+One-way hashing (cannot reverse-engineer original password)
+
+Input Validation
+
+Email format validation using Pydantic EmailStr
+Password strength requirements:
+
+Minimum 8 characters
+At least one uppercase letter
+At least one lowercase letter
+At least one digit
 
 
----
 
-## SQL Operations Completed
+Database Security
 
-### A. Create Tables
-```sql
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+Password hashes stored instead of plaintext passwords
+Unique constraints prevent duplicate usernames/emails
+SQLAlchemy ORM prevents SQL injection attacks
 
-CREATE TABLE calculations (
-    id SERIAL PRIMARY KEY,
-    operation VARCHAR(20) NOT NULL,
-    operand_a FLOAT NOT NULL,
-    operand_b FLOAT NOT NULL,
-    result FLOAT NOT NULL,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    user_id INTEGER NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-```
+📚 Technologies Used
 
-### B. Insert Records
-```sql
-INSERT INTO users (username, email) VALUES ('john_doe', 'john@example.com');
-INSERT INTO users (username, email) VALUES ('jane_smith', 'jane@example.com');
+FastAPI: Modern web framework for building APIs
+SQLAlchemy: Python SQL toolkit and ORM
+Pydantic: Data validation using Python type annotations
+PostgreSQL: Relational database
+Bcrypt: Password hashing library
+Pytest: Testing framework
+Docker: Containerization platform
+GitHub Actions: CI/CD automation
 
-INSERT INTO calculations (operation, operand_a, operand_b, result, user_id)
-VALUES ('add', 2, 3, 5, 1);
+🔄 CI/CD Pipeline
+The GitHub Actions workflow automatically:
 
-INSERT INTO calculations (operation, operand_a, operand_b, result, user_id)
-VALUES ('multiply', 4, 5, 20, 2);
-```
+Tests: Runs unit, integration, and E2E tests
+Security Scan: Uses Trivy to scan for vulnerabilities
+Deploy: Builds and pushes Docker image to Docker Hub
 
-### C. Query Data
-```sql
-SELECT * FROM users;
-SELECT * FROM calculations;
+View workflow runs: GitHub Actions
+📖 API Documentation
+Once the application is running, access interactive API docs:
 
--- JOIN query
-SELECT users.username, calculations.operation, calculations.result
-FROM calculations
-JOIN users ON calculations.user_id = users.id;
-```
+Swagger UI: http://localhost:8000/docs
+ReDoc: http://localhost:8000/redoc
 
-### D. Update Record
-```sql
-UPDATE calculations SET result = 6 WHERE id = 1;
-```
+ Author
+Pruthul Patel
 
-### E. Delete Record
-```sql
-DELETE FROM calculations WHERE id = 2;
-```
+GitHub: @Pruthul15
+Docker Hub: pruthul123
 
----
-
-## Screenshots Included
-
-1. Docker Compose running in terminal
-2. pgAdmin tables view (users and calculations tables)
-3. JOIN query results showing users and their calculations
-
----
-
-## What I Learned
-
-- Set up multi-container applications with Docker Compose
-- Created tables with foreign key relationships
-- Performed CRUD operations (Create, Read, Update, Delete)
-- Used JOIN queries to combine data from multiple tables
-- Understood one-to-many relationships between users and calculations
-
----
-
-## Challenges & Solutions
-
-**Challenge:** Foreign key constraint error when inserting calculations before users  
-**Solution:** Ensured users were inserted before calculations
-
-**Challenge:** Connected to wrong database initially  
-**Solution:** Verified database name in docker-compose.yml and used `fastapi_db`
-
----
-
-**All CI/CD checks passing** | **Repository:** https://github.com/Pruthul15/assignment9
+Course: IS601.855 - Python for Web API Development
+Semester: Fall 2025
+Institution: New Jersey Institute of Technology
