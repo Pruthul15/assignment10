@@ -165,3 +165,43 @@ def fastapi_server():
     yield
     process.kill()
     process.wait()
+
+
+# ============================================================================
+# Playwright Fixtures for E2E Tests
+# ============================================================================
+
+import subprocess
+import time
+
+
+@pytest.fixture(scope="session")
+def browser():
+    """Launch Chromium browser for E2E tests"""
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        yield browser
+        browser.close()
+
+
+@pytest.fixture
+def page(browser):
+    """Create a new page for each E2E test"""
+    page = browser.new_page()
+    yield page
+    page.close()
+
+
+@pytest.fixture(scope="session")
+def fastapi_server():
+    """Start FastAPI server for E2E tests"""
+    process = subprocess.Popen(
+        ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+    time.sleep(3)  # Wait for server to start
+    yield
+    process.kill()
+    process.wait()
