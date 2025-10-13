@@ -47,6 +47,8 @@ jobs:
           source venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
+          playwright install chromium
+          playwright install-deps
       
       - name: Run unit tests
         env:
@@ -61,6 +63,13 @@ jobs:
         run: |
           source venv/bin/activate
           pytest tests/integration/
+      
+      - name: Run E2E tests
+        env:
+          DATABASE_URL: postgresql://user:password@localhost:5432/testdb
+        run: |
+          source venv/bin/activate
+          pytest tests/e2e/
 
   security:
     needs: test
