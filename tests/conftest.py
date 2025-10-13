@@ -89,3 +89,79 @@ def managed_db_session() -> Session:
 def pytest_configure(config):
     """Register custom markers"""
     config.addinivalue_line("markers", "slow: marks tests as slow")
+
+
+# Playwright fixtures for E2E tests
+@pytest.fixture(scope="session")
+def browser():
+    """Launch browser for E2E tests"""
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        yield browser
+        browser.close()
+
+
+@pytest.fixture
+def page(browser):
+    """Create a new page for each test"""
+    page = browser.new_page()
+    yield page
+    page.close()
+
+
+@pytest.fixture
+def fastapi_server():
+    """Start FastAPI server for E2E tests"""
+    import subprocess
+    import time
+    
+    process = subprocess.Popen(
+        ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+    time.sleep(2)  # Wait for server to start
+    yield
+    process.kill()
+
+
+# ============================================================================
+# Playwright Fixtures for E2E Tests
+# ============================================================================
+
+import pytest
+from playwright.sync_api import sync_playwright
+import subprocess
+import time
+
+
+@pytest.fixture(scope="session")
+def browser():
+    """Launch Chromium browser for E2E tests"""
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        yield browser
+        browser.close()
+
+
+@pytest.fixture
+def page(browser):
+    """Create a new page for each E2E test"""
+    page = browser.new_page()
+    yield page
+    page.close()
+
+
+@pytest.fixture(scope="session")
+def fastapi_server():
+    """Start FastAPI server for E2E tests"""
+    process = subprocess.Popen(
+        ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+    time.sleep(3)  # Wait for server to start
+    yield
+    process.kill()
+    process.wait()
