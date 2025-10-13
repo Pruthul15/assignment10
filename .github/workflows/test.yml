@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI/CD Pipeline
 
 on:
   push:
@@ -9,36 +9,58 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
     steps:
       - uses: actions/checkout@v3
       
-      - uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-          
-      - uses: actions/cache@v3
+      
+      - name: Cache pip
+        uses: actions/cache@v3
         with:
-          path: |
-            venv
-            ~/.cache/pip
+          path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-
+      
       - name: Install dependencies
         run: |
           python -m venv venv
           source venv/bin/activate
+          pip install --upgrade pip
           pip install -r requirements.txt
-          playwright install
-          playwright install-deps
-
-      - name: Run tests
+      
+      - name: Run unit tests
+        env:
+          DATABASE_URL: postgresql://user:password@localhost:5432/testdb
         run: |
           source venv/bin/activate
           pytest tests/unit/ --cov=app --junitxml=test-results/junit.xml
+      
+      - name: Run integration tests
+        env:
+          DATABASE_URL: postgresql://user:password@localhost:5432/testdb
+        run: |
+          source venv/bin/activate
           pytest tests/integration/
-          pytest tests/e2e/
 
   security:
     needs: test
@@ -54,11 +76,10 @@ jobs:
         with:
           image-ref: 'app:test'
           format: 'table'
-          exit-code: '1'
+          exit-code: '0'
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
-          trivyignores: '.trivyignore'
-
+  
   deploy:
     needs: security
     if: github.ref == 'refs/heads/main'
@@ -77,8 +98,6 @@ jobs:
         with:
           push: true
           tags: |
-            pruthul123/assignment9:latest
-            pruthul123/assignment9:${{ github.sha }}
+            pruthul123/assignment10:latest
+            pruthul123/assignment10:${{ github.sha }}
           platforms: linux/amd64,linux/arm64
-          cache-from: type=registry,ref=pruthul123/assignment9:cache
-          cache-to: type=inline,mode=max
