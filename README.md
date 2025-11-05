@@ -299,9 +299,3 @@ curl http://localhost:8000/docs
 **Pruthul Patel**
 - GitHub: [@Pruthul15](https://github.com/Pruthul15)
 - Docker Hub: [pruthul123](https://hub.docker.com/u/pruthul123)
-- Semester: Fall 2025
-
----
-
-**Last Updated:** November 4, 2025  
-**Status:** ✅ Complete & Production Ready
