@@ -1,3 +1,4 @@
+# app/database.py
 """
 Database connection and session management.
 """
@@ -25,3 +26,15 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def create_tables():
+    """Create all database tables based on models."""
+    from app.models.user import Base
+    Base.metadata.create_all(bind=engine)
+
+
+def drop_tables():
+    """Drop all database tables (for testing)."""
+    from app.models.user import Base
+    Base.metadata.drop_all(bind=engine)
