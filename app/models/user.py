@@ -1,3 +1,4 @@
+# app/models/user.py
 """
 SQLAlchemy User Model - ONLY required fields per assignment.
 """
