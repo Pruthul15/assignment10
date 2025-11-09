@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL",
-        "postgresql://user:password@localhost:5432/mytestdb"
+        "postgresql://postgres:postgres@localhost:5432/fastapi_db"
     )
     
     # JWT Settings
