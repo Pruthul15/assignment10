@@ -1,11 +1,13 @@
-# main.py
+# app/main.py
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel, Field, field_validator  # Use @validator for Pydantic 1.x
+from pydantic import BaseModel, Field, field_validator
 from fastapi.exceptions import RequestValidationError
-from app.operations import add, subtract, multiply, divide  # Ensure correct import path
+from app.operations import add, subtract, multiply, divide
+from app.routers import auth
+from app.database import create_tables
 import uvicorn
 import logging
 
@@ -13,17 +15,31 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+app = FastAPI(
+    title="Calculator API with Authentication",
+    description="A secure calculator API with user authentication using JWT",
+    version="1.0.0"
+)
 
 # Setup templates directory
 templates = Jinja2Templates(directory="templates")
+
+@app.on_event("startup")
+async def startup_event():
+    """Create database tables on application startup."""
+    logger.info("Creating database tables...")
+    create_tables()
+    logger.info("Database tables created successfully!")
+
+# Include authentication router
+app.include_router(auth.router)
 
 # Pydantic model for request data
 class OperationRequest(BaseModel):
     a: float = Field(..., description="The first number")
     b: float = Field(..., description="The second number")
 
-    @field_validator('a', 'b')  # Correct decorator for Pydantic 1.x
+    @field_validator('a', 'b')
     def validate_numbers(cls, value):
         if not isinstance(value, (int, float)):
             raise ValueError('Both a and b must be numbers.')
@@ -116,3 +132,7 @@ async def divide_route(operation: OperationRequest):
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
+
+
+
+
